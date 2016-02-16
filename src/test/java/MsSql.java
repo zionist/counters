@@ -22,8 +22,8 @@ public class MsSql extends TestCase {
         Statement statement = connection.createStatement();
 
         ResultSet resultSet = statement.executeQuery("SELECT 2, 3");
-        Integer columnCount = resultSet.getMetaData().getColumnCount();
 
+        Integer columnCount = resultSet.getMetaData().getColumnCount();
         while (resultSet.next()) {
             for (Integer i=1; i <= columnCount; i++){
                 System.out.println(resultSet.getString(i));

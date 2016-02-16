@@ -7,8 +7,9 @@
 <body>
     <p th:text="'Hello, ' + ${name} + '!'" />
 
-    <tr th:each="prod : ${prods}">
-        <td th:text="${prod}">Onions</td>
+    <tr th:each="testRun : ${testRuns}">
+        <td th:text="${testRun.startTime}">Onions</td>
+        <td th:text="${testRun.runId}">Onions</td>
     </tr>
 
 </body>
