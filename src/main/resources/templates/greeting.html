@@ -6,5 +6,10 @@
 </head>
 <body>
     <p th:text="'Hello, ' + ${name} + '!'" />
+
+    <tr th:each="prod : ${prods}">
+        <td th:text="${prod}">Onions</td>
+    </tr>
+
 </body>
 </html>
