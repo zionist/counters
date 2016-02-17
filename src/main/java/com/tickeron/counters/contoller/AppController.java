@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public final class AppController {
@@ -31,7 +30,6 @@ public final class AppController {
         ResultSet resultSet = statement.executeQuery(
             "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime);"
         );
-        Integer columnCount = resultSet.getMetaData().getColumnCount();
         final List<TestRun> testRuns = new ArrayList<>();
         while (resultSet.next()) {
             TestRun testRun = new TestRun();
@@ -51,13 +49,13 @@ public final class AppController {
     }
 
     @RequestMapping("/load_tests")
-    public String testRun(@RequestParam(value = "testRunId", required = true) String testRunId, Model model)
+    public String loadTests(@RequestParam(value = "testRunId", required = true) String testRunId, Model model)
             throws SQLException {
 
         dbHelper.connect();
         Statement statement = dbHelper.getStatement();
         ResultSet resultSet = statement.executeQuery(
-                String.format("SELECT LoadTestRunId, LoadTestName, StartTime, EndTime, RunDuration, WarmupTime, Outcome "
+           String.format("SELECT LoadTestRunId, LoadTestName, StartTime, EndTime, RunDuration, WarmupTime, Outcome "
                         + "FROM LoadTest2010.dbo.LoadTestRun WHERE RunId = '%s' ORDER BY LoadTestRunId;",
                         StringEscapeUtils.escapeSql(testRunId))
         );
@@ -77,6 +75,118 @@ public final class AppController {
         model.addAttribute("testRunId", testRunId);
         model.addAttribute("loadTestRuns", loadTestRuns);
         return "load_tests";
+    }
+
+
+
+    @RequestMapping("load_test_counters")
+    public String loadTestCounters(
+            @RequestParam(value = "loadTestRunId", required = true) Integer loadTestRunId,
+            @RequestParam(value = "loadTestName", required = true) String loadTestName,
+
+            Model model) throws SQLException {
+
+        final String query = String.format(
+                "SELECT \n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [iis_counters].[dbo].CounterData cd \n" +
+                "   JOIN [iis_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   WHERE cdet.ObjectName = 'Memory' AND cdet.CounterName = 'Committed Bytes'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'iis Memory Commited bytes',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [iis_counters].[dbo].CounterData cd \n" +
+                "   JOIN [iis_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   WHERE cdet.ObjectName = 'Memory' AND cdet.CounterName = 'Pages/sec'    \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'iis Memory Pages/sec',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [iis_counters].[dbo].CounterData cd \n" +
+                "   JOIN [iis_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'Processor' and cdet.CounterName = '%% Processor Time' and cdet.InstanceName= '_Total'   \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'iis Processor %% Processor time',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [iis_counters].[dbo].CounterData cd \n" +
+                "   JOIN [iis_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'PhysicalDisk' and cdet.CounterName = '%% Disk Read Time' and InstanceName = '_Total'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'iis Processor %%Disk Read Time ',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [iis_counters].[dbo].CounterData cd \n" +
+                "   JOIN [iis_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'PhysicalDisk' and cdet.CounterName = '%% Disk Write Time' and InstanceName = '_Total'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'iis Processor %%Disk Write Time ',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue)\n" +
+                "   FROM [database_counters].[dbo].CounterData cd \n" +
+                "   JOIN [database_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   WHERE cdet.ObjectName = 'Memory' AND cdet.CounterName = 'Committed Bytes'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'database Memory Commited bytes',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue)\n" +
+                "   FROM [database_counters].[dbo].CounterData cd \n" +
+                "   JOIN [database_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   WHERE cdet.ObjectName = 'Memory' AND cdet.CounterName = 'Pages/sec'    \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'database Memory Pages/sec',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [database_counters].[dbo].CounterData cd \n" +
+                "   JOIN [database_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'Processor' and cdet.CounterName = '%% Processor Time' and cdet.InstanceName= '_Total'   \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'database Processor %% Processor time',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [database_counters].[dbo].CounterData cd \n" +
+                "   JOIN [database_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'PhysicalDisk' and cdet.CounterName = '%% Disk Read Time' and InstanceName = '_Total'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'database Processor %%Disk Read Time ',\n" +
+                "\n" +
+                "( SELECT AVG(cd.CounterValue) \n" +
+                "   FROM [database_counters].[dbo].CounterData cd \n" +
+                "   JOIN [database_counters].[dbo].CounterDetails cdet ON cd.CounterID = cdet.CounterID \n" +
+                "   where cdet.ObjectName = 'PhysicalDisk' and cdet.CounterName = '%% Disk Write Time' and InstanceName = '_Total'  \n" +
+                "   AND cd.CounterDTM > r1.StartTime \n" +
+                "   AND cd.CounterDTM < r1.EndTime \n" +
+                ") as 'database Processor %%Disk Write Time '" +
+                "FROM LoadTest2010.dbo.LoadTestRun r1  WHERE r1.LoadTestRunId = %d", loadTestRunId);
+
+        dbHelper.connect();
+        Statement statement = dbHelper.getStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        Map<String, String> result = new LinkedHashMap<>();
+        Integer columnCount = resultSet.getMetaData().getColumnCount();
+        while (resultSet.next()) {
+            for (Integer i = 1; i <= columnCount; i++){
+                result.put(
+                        resultSet.getMetaData().getColumnName(i),
+                        resultSet.getString(i)
+                        );
+            }
+        }
+        model.addAttribute("result", result);
+        model.addAttribute("loadTestRunId", loadTestRunId);
+        model.addAttribute("loadTestName", loadTestName);
+        return "load_test_counters";
+
     }
 
 }

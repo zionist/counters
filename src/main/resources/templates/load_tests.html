@@ -20,7 +20,8 @@
                 <th>Outcome</th>
             </tr>
             <tr th:each="loadTestRun : ${loadTestRuns}">
-                <td> <a th:text="${loadTestRun.loadTestName}" th:attr="href='/load_test_counters/?loadTestId=' + ${loadTestRun.loadTestRunId}"> </a> </td>
+                <!-- th:attr="href='/load_test_counters/?loadTestRunId=' + ${loadTestRun.loadTestRunId} + '\&name=' + ${loadTestRun.loadTestName}"> </a> </td> -->
+                <td> <a th:text="${loadTestRun.loadTestName}" th:href="@{/load_test_counters(loadTestRunId=${loadTestRun.loadTestRunId}, loadTestName=${loadTestRun.loadTestName})}"> </a>  </td>
                 <td th:text="${loadTestRun.startTime}"> </td>
                 <td th:text="${loadTestRun.endTime}"> </td>
                 <td th:text="${loadTestRun.runDuration}"> </td>
