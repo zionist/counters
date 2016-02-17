@@ -3,6 +3,7 @@ package com.tickeron.counters.contoller;
 import com.tickeron.counters.DbHelper;
 import com.tickeron.counters.dto.LoadTestRun;
 import com.tickeron.counters.dto.TestRun;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,7 +58,8 @@ public final class AppController {
         Statement statement = dbHelper.getStatement();
         ResultSet resultSet = statement.executeQuery(
                 String.format("SELECT LoadTestRunId, LoadTestName, StartTime, EndTime, RunDuration, WarmupTime, Outcome "
-                        + "FROM LoadTest2010.dbo.LoadTestRun WHERE RunId = '%s' ORDER BY LoadTestRunId;", testRunId)
+                        + "FROM LoadTest2010.dbo.LoadTestRun WHERE RunId = '%s' ORDER BY LoadTestRunId;",
+                        StringEscapeUtils.escapeSql(testRunId))
         );
         final List<LoadTestRun> loadTestRuns = new ArrayList<>();
         while (resultSet.next()) {
