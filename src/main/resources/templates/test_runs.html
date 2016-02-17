@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>List of test runs</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+</head>
+<body>
+    <!-- <p th:text="'Hello, ' + ${name} + '!'" /> -->
+    <div class="container text-center">
+        <h1> List of test runs</h1>
+        <table class="table table-striped text-left">
+            <tr>
+                <th> Test run id </th>
+                <th> Test run start time </th>
+                <th> Test run end time </th>
+            </tr>
+            <tr th:each="testRun : ${testRuns}">
+                <td> <a th:text="${testRun.runId}" th:attr="href='/load_tests?testRunId=' + ${testRun.runId}"> </a> </td>
+                <td th:text="${testRun.startTime}"></td>
+                <td th:text="${testRun.endTime}"></td>
+            </tr>
+
+        </table>
+    </div>
+
+</body>
+</html>

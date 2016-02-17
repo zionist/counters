@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Load Test Runs</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+</head>
+<body>
+    <!-- <p th:text="'Hello, ' + ${name} + '!'" /> -->
+    <div class="container text-center">
+        <h1 th:text="'List of load tests for test run ' + ${testRunId}"> </h1>
+        <table class="table table-striped text-left">
+            <tr>
+                <th>Name</th>
+                <th>Start time</th>
+                <th>End time</th>
+                <th>Run duration in seconds</th>
+                <th>Warm up time in seconds</th>
+                <th>Outcome</th>
+            </tr>
+            <tr th:each="loadTestRun : ${loadTestRuns}">
+                <td> <a th:text="${loadTestRun.loadTestName}" th:attr="href='/load_test_counters/?loadTestId=' + ${loadTestRun.loadTestRunId}"> </a> </td>
+                <td th:text="${loadTestRun.startTime}"> </td>
+                <td th:text="${loadTestRun.endTime}"> </td>
+                <td th:text="${loadTestRun.runDuration}"> </td>
+                <td th:text="${loadTestRun.warmupTime}"> </td>
+                <td th:text="${loadTestRun.outcome}"> </td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</body>
+</html>

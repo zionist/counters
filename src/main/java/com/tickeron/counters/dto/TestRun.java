@@ -3,12 +3,20 @@ package com.tickeron.counters.dto;
 /**
  * Created by slaviann on 16.02.16.
  */
-public class TestRun {
-    public String startTime;
-    public String runId;
+public final class TestRun {
 
-    public String getStartTime() {
-        return startTime;
+    private String startTime;
+
+    private String runId;
+
+    private String endTime;
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
     public void setStartTime(String startTime) {
@@ -19,7 +27,11 @@ public class TestRun {
         return runId;
     }
 
-    public void setRunId(String runId) {
+    public void setRunId(final String runId) {
         this.runId = runId;
+    }
+
+    public String getStartTime() {
+        return startTime;
     }
 }

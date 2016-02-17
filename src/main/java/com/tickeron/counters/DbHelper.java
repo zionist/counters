@@ -5,7 +5,7 @@ import java.sql.*;
 /**
  * Created by slaviann on 16.02.16.
  */
-public class DbHelper {
+public final class DbHelper {
 
 
     private String url, username, password;
@@ -32,9 +32,9 @@ public class DbHelper {
 
     public void disconnect() throws SQLException {
         connection.close();
-        if(resultSet != null) resultSet.close();
-        if(statement != null) statement.close();
-        if(connection != null) connection.close();
+        if (resultSet != null) resultSet.close();
+        if (statement != null) statement.close();
+        if (connection != null) connection.close();
     }
 
 
