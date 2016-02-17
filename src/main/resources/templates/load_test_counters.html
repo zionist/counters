@@ -9,9 +9,8 @@
 <body>
     <!-- <p th:text="'Hello, ' + ${name} + '!'" /> -->
     <div class="container text-left">
-        <h1 th:text="'Server side counters for load test ' + ${loadTestName}"> </h1>
-
-
+        <h2 th:text="'Load test ' + ${testRunId} + ' / ' + ${loadTestName}"> </h2>
+        <h2> Server side counters </h2>
         <table class="table table-striped text-left">
             <tr>
                 <th> Counter </th>

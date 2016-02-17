@@ -82,7 +82,8 @@ public final class AppController {
     @RequestMapping("load_test_counters")
     public String loadTestCounters(
             @RequestParam(value = "loadTestRunId", required = true) Integer loadTestRunId,
-            @RequestParam(value = "loadTestName", required = true) String loadTestName,
+            @RequestParam(value = "loadTestName", required = false) String loadTestName,
+            @RequestParam(value = "testRunId", required = false) String testRunId,
 
             Model model) throws SQLException {
 
@@ -185,6 +186,7 @@ public final class AppController {
         model.addAttribute("result", result);
         model.addAttribute("loadTestRunId", loadTestRunId);
         model.addAttribute("loadTestName", loadTestName);
+        model.addAttribute("testRunId", testRunId);
         return "load_test_counters";
 
     }
