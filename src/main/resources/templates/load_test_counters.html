@@ -11,27 +11,27 @@
     <div class="container text-left">
         <h2 th:text="'Load test ' + ${testRunId} + ' / ' + ${loadTestName}"> </h2>
         <h2> Server side counters </h2>
-        <table class="table table-striped text-left">
+        <table class="table table-striped ">
             <tr>
-                <th> Counter </th>
-                <th> Average value </th>
+                <th class="col-md-6" > Counter </th>
+                <th class="col-md-6" > Average value </th>
             </tr>
             <tr th:each="element : ${serverSideCounters}">
-                <td th:text="${element.key}"></td>
-                <td th:text="${element.value}"></td>
+                <td class="col-md-6" th:text="${element.key}"></td>
+                <td class="col-md-6" th:text="${element.value}"></td>
             </tr>
 
         </table>
 
         <h2> Client side counters </h2>
-        <table class="table table-striped text-left">
+        <table class="table table-striped">
             <tr>
                 <th> Counter </th>
                 <th> Value </th>
             </tr>
             <tr th:each="element : ${clientSideCounters}">
-                <td th:text="${element.key}"></td>
-                <td th:text="${element.value}"></td>
+                <td class="col-md-6" th:text="${element.key}"></td>
+                <td class="col-md-6" th:text="${element.value}"></td>
             </tr>
 
         </table>
