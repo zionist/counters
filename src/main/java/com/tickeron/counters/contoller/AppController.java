@@ -87,7 +87,7 @@ public final class AppController {
 
             Model model) throws SQLException {
 
-        final String query = String.format(
+        final String serverSideQuery = String.format(
                 "SELECT \n" +
                 "( SELECT AVG(cd.CounterValue) \n" +
                 "   FROM [iis_counters].[dbo].CounterData cd \n" +
@@ -170,20 +170,48 @@ public final class AppController {
                 ") as 'database Processor %%Disk Write Time '" +
                 "FROM LoadTest2010.dbo.LoadTestRun r1  WHERE r1.LoadTestRunId = %d", loadTestRunId);
 
+
+        final String clientSideQuery =
+                String.format(
+                        "SELECT r1.StartTime, r1.EndTime,\n" +
+                                "(SELECT c1.CumulativeValue FROM LoadTest2010.dbo.[LoadTestPerformanceCounterInstance] c1 WHERE c1.LoadTestRunId = r1.LoadTestRunId AND CounterId = 77 AND c1.InstanceName = '_Total') AS PagesSec,\n" +
+                                "(SELECT c1.CumulativeValue FROM LoadTest2010.dbo.[LoadTestPerformanceCounterInstance] c1 WHERE c1.LoadTestRunId = r1.LoadTestRunId AND CounterId = 49 AND c1.InstanceName = '_Total') AS UserLoad,\n" +
+                                "(SELECT c1.CumulativeValue FROM LoadTest2010.dbo.[LoadTestPerformanceCounterInstance] c1 WHERE c1.LoadTestRunId = r1.LoadTestRunId AND CounterId = 71 AND c1.InstanceName = '_Total') AS TotalErrors\n" +
+                                "FROM  LoadTest2010.dbo.LoadTestRun r1 WHERE LoadTestRunId = %d\n",
+                        loadTestRunId);
+
         dbHelper.connect();
+        // get server side counters
+        Map<String, String> serverSideCounters = new LinkedHashMap<>();
         Statement statement = dbHelper.getStatement();
-        ResultSet resultSet = statement.executeQuery(query);
-        Map<String, String> result = new LinkedHashMap<>();
+        ResultSet resultSet = statement.executeQuery(serverSideQuery);
         Integer columnCount = resultSet.getMetaData().getColumnCount();
         while (resultSet.next()) {
             for (Integer i = 1; i <= columnCount; i++){
-                result.put(
+                serverSideCounters.put(
                         resultSet.getMetaData().getColumnName(i),
                         resultSet.getString(i)
                         );
             }
         }
-        model.addAttribute("result", result);
+
+        // get client side counters
+        Map<String, String> clientSideCounters = new LinkedHashMap<>();
+        resultSet = statement.executeQuery(clientSideQuery);
+        columnCount = resultSet.getMetaData().getColumnCount();
+        while (resultSet.next()) {
+            for (Integer i = 1; i <= columnCount; i++){
+                clientSideCounters.put(
+                        resultSet.getMetaData().getColumnName(i),
+                        resultSet.getString(i)
+                );
+            }
+        }
+
+        dbHelper.disconnect();
+
+        model.addAttribute("serverSideCounters", serverSideCounters);
+        model.addAttribute("clientSideCounters", clientSideCounters);
         model.addAttribute("loadTestRunId", loadTestRunId);
         model.addAttribute("loadTestName", loadTestName);
         model.addAttribute("testRunId", testRunId);
