@@ -5,11 +5,72 @@
     <title>Load Test Runs</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- some ajax -->
+    <script>
+        function saveDescription() {
+            $.postJSON = function(url, data, callback) {
+                return jQuery.ajax({
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    'type': 'POST',
+                    'url': url,
+                    'data': JSON.stringify(data),
+                    'dataType': 'json',
+                    'success': callback
+                });
+            };
+
+            $.postJSON("set_description", {"description":  $('#descriptionTextArea').val()}, function(){});
+            $('#setDescription').modal('hide')
+        }
+    </script>
+
 </head>
 <body>
     <!-- <p th:text="'Hello, ' + ${name} + '!'" /> -->
-    <div class="container text-center">
-        <h1 th:text="'List of load tests for test run ' + ${testRunId}"> </h1>
+    <div class="container text-left">
+        <div class="modal fade" tabindex="-1" id="setDescription" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title"> Set description </h4>
+                    </div>
+                    <div class="modal-body">
+                        <textarea style="resize:none" rows="3" cols="90" name="text" id="descriptionTextArea"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="saveDescription" onclick="saveDescription()" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <h1 th:text="'Test run ' + ${testRunId}"> </h1>
+
+        <!-- Button trigger modal -->
+        <div class="row">
+            <div class="col-xs-8 col-md-8">
+                <p> Set or change description for this test run </p>
+            </div>
+            <div class="col-xs-4 col-md-4 text-right">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#setDescription">
+                    Change
+                </button>
+            </div>
+        </div>
+
+        <h2> List of load tests </h2>
         <table class="table table-striped text-left">
             <tr>
                 <th>Name</th>

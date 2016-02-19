@@ -1,13 +1,18 @@
 package com.tickeron.counters.contoller;
 
 import com.tickeron.counters.DbHelper;
+import com.tickeron.counters.dto.Description;
 import com.tickeron.counters.dto.LoadTestRun;
 import com.tickeron.counters.dto.TestRun;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.sql.ResultSet;
@@ -21,14 +26,30 @@ public final class AppController {
     @Autowired
     private DbHelper dbHelper;
 
-    @RequestMapping("/test_runs")
+    @RequestMapping(value = "/set_description", method = RequestMethod.POST)
+    public ResponseEntity<Description> setDescription(@RequestBody Description description)
+            throws SQLException {
+        dbHelper.connect();
+        Statement statement = dbHelper.getStatement();
+
+        System.out.println(description.getDescription());
+
+        //ResultSet resultSet = statement.executeQuery(
+        //        "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
+        //);
+        dbHelper.disconnect();
+        return new ResponseEntity<Description>(description, HttpStatus.OK);
+
+    }
+
+    @RequestMapping(value = "test_runs", method = RequestMethod.GET)
     public String testRuns(Model model)
             throws SQLException {
         dbHelper.connect();
         Statement statement = dbHelper.getStatement();
 
         ResultSet resultSet = statement.executeQuery(
-            "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime);"
+            "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
         );
         final List<TestRun> testRuns = new ArrayList<>();
         while (resultSet.next()) {
@@ -48,7 +69,7 @@ public final class AppController {
         return "test_runs";
     }
 
-    @RequestMapping("/load_tests")
+    @RequestMapping(value = "load_tests", method = RequestMethod.GET)
     public String loadTests(@RequestParam(value = "testRunId", required = true) String testRunId, Model model)
             throws SQLException {
 
@@ -79,7 +100,7 @@ public final class AppController {
 
 
 
-    @RequestMapping("load_test_counters")
+    @RequestMapping(value = "load_test_counters", method = RequestMethod.GET)
     public String loadTestCounters(
             @RequestParam(value = "loadTestRunId", required = true) Integer loadTestRunId,
             @RequestParam(value = "loadTestName", required = false) String loadTestName,
