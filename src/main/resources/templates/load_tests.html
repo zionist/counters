@@ -29,7 +29,10 @@
                 });
             };
 
-            $.postJSON("set_description", {"description":  $('#descriptionTextArea').val()}, function(){});
+            $.postJSON("set_description", {
+                "runId": $('#testRunId').text(),
+                "description":  $('#descriptionTextArea').val()
+            }, function(){});
             $('#setDescription').modal('hide')
         }
     </script>
@@ -56,7 +59,7 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
-        <h1 th:text="'Test run ' + ${testRunId}"> </h1>
+        <h1 th:text="${testRunId}" id="testRunId"> </h1>
 
         <!-- Button trigger modal -->
         <div class="row">

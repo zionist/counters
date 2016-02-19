@@ -13,13 +13,15 @@
         <table class="table table-striped text-left">
             <tr>
                 <th> Test run id </th>
+                <th> Description </th>
                 <th> Test run start time </th>
                 <th> Test run end time </th>
             </tr>
-            <tr th:each="testRun : ${testRuns}">
-                <td> <a th:text="${testRun.runId}" th:attr="href='/load_tests?testRunId=' + ${testRun.runId}"> </a> </td>
-                <td th:text="${testRun.startTime}"></td>
-                <td th:text="${testRun.endTime}"></td>
+            <tr th:each="testRunGenerated : ${testRunsGenerated}">
+                <td> <a th:text="${testRunGenerated.runId}" th:attr="href='/load_tests?testRunId=' + ${testRunGenerated.runId}"> </a> </td>
+                <td th:text="${testRunGenerated.description}"></td>
+                <td th:text="${testRunGenerated.startTime}"></td>
+                <td th:text="${testRunGenerated.endTime}"></td>
             </tr>
 
         </table>

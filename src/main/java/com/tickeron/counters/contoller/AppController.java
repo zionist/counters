@@ -1,9 +1,9 @@
 package com.tickeron.counters.contoller;
 
 import com.tickeron.counters.DbHelper;
-import com.tickeron.counters.dto.Description;
-import com.tickeron.counters.dto.LoadTestRun;
 import com.tickeron.counters.dto.TestRun;
+import com.tickeron.counters.dto.LoadTestRun;
+import com.tickeron.counters.dto.TestRunGenerated;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,19 +27,32 @@ public final class AppController {
     private DbHelper dbHelper;
 
     @RequestMapping(value = "/set_description", method = RequestMethod.POST)
-    public ResponseEntity<Description> setDescription(@RequestBody Description description)
+    public ResponseEntity<TestRun> setDescription(@RequestBody TestRun description)
             throws SQLException {
         dbHelper.connect();
         Statement statement = dbHelper.getStatement();
 
-        System.out.println(description.getDescription());
-
-        //ResultSet resultSet = statement.executeQuery(
-        //        "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
-        //);
+        ResultSet resultSet = statement.executeQuery(
+                String.format("SELECT runId FROM LoadTest2010.dbo.TestRun WHERE runId = '%s'",
+                        StringEscapeUtils.escapeSql(description.getRunId()))
+        );
+        // INSERT if no TestRun
+        if (!resultSet.next()) {
+            statement.execute(
+                    String.format("INSERT INTO LoadTest2010.dbo.TestRun(description, RunId) VALUES ('%s', '%s')",
+                            StringEscapeUtils.escapeSql(description.getDescription()),
+                            StringEscapeUtils.escapeSql(description.getRunId()))
+            );
+        // UPDATE
+        } else {
+            statement.execute(
+                    String.format("UPDATE LoadTest2010.dbo.TestRun SET description = '%s' WHERE RunId = '%s'",
+                            StringEscapeUtils.escapeSql(description.getDescription()),
+                            StringEscapeUtils.escapeSql(description.getRunId()))
+            );
+        }
         dbHelper.disconnect();
-        return new ResponseEntity<Description>(description, HttpStatus.OK);
-
+        return new ResponseEntity<>(description, HttpStatus.OK);
     }
 
     @RequestMapping(value = "test_runs", method = RequestMethod.GET)
@@ -49,23 +62,25 @@ public final class AppController {
         Statement statement = dbHelper.getStatement();
 
         ResultSet resultSet = statement.executeQuery(
-            "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
+            "SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId, (SELECT description FROM LoadTest2010.dbo.TestRun tr WHERE tr.RunId = ltr.RunId) FROM LoadTest2010.dbo.LoadTestRun ltr GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
+            //"SELECT MIN(StartTime), MAX(EndTime) AS EndTime, RunId FROM LoadTest2010.dbo.LoadTestRun GROUP BY RunId ORDER BY MIN(StartTime) DESC;"
         );
-        final List<TestRun> testRuns = new ArrayList<>();
+        final List<TestRunGenerated> testRunsGenerateds = new ArrayList<>();
         while (resultSet.next()) {
-            TestRun testRun = new TestRun();
-            testRun.setStartTime(resultSet.getString(1));
-            testRun.setEndTime(resultSet.getString(2));
-            testRun.setRunId(resultSet.getString(3));
-            testRuns.add(testRun);
-            //for (Integer i=1; i <= columnCount; i++){
-            //    System.out.println(resultSet.getString(i));
-            //}
+            TestRunGenerated testRunGenerated = new TestRunGenerated();
+            testRunGenerated.setStartTime(resultSet.getString(1));
+            testRunGenerated.setEndTime(resultSet.getString(2));
+            testRunGenerated.setRunId(resultSet.getString(3));
+            testRunGenerated.setDescription(resultSet.getString(4));
+            testRunsGenerateds.add(testRunGenerated);
         }
+
+        //Get Optional description
+
+
+
         dbHelper.disconnect();
-
-        model.addAttribute("testRuns", testRuns);
-
+        model.addAttribute("testRunsGenerated", testRunsGenerateds);
         return "test_runs";
     }
 
